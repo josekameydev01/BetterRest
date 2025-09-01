@@ -8,19 +8,12 @@
 import SwiftUI
 
 struct ContentView: View {
+    private let currentDate = Date.now
     
     var body: some View {
-        Button("Click me!") {
-            printDate()
-        }
-        .buttonStyle(.borderedProminent)
-    }
-    
-    func printDate() {
-        let components = Calendar.current.dateComponents([.hour, .minute], from: Date.now)
-        let hour = components.hour ?? 0
-        let minute = components.minute ?? 0
-        print("\(hour):\(minute)")
+        Text(currentDate, format: .dateTime.hour().minute())
+        Text(currentDate, format: .dateTime.day().month().year())
+        Text(currentDate.formatted(date: .numeric, time: .shortened))
     }
 }
 
