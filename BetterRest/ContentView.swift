@@ -8,16 +8,19 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var wakeUp = Date.now
     
     var body: some View {
-        DatePicker("Please enter a past date", selection: $wakeUp, in: ...Date.now ,displayedComponents: .date)
-            .labelsHidden()
-        
-        /*
-        DatePicker("Please enter a past date", selection: $wakeUp, in: ...Date.now ,displayedComponents: .date)
-            .labelsHidden()
-         */
+        Button("Click me!") {
+            printDate()
+        }
+        .buttonStyle(.borderedProminent)
+    }
+    
+    func printDate() {
+        var dateComponents = DateComponents()
+        dateComponents.hour = 8
+        dateComponents.minute = 0
+        print(Calendar.current.date(from: dateComponents) ?? .now)
     }
 }
 
