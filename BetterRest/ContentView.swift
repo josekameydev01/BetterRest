@@ -17,10 +17,10 @@ struct ContentView: View {
     }
     
     func printDate() {
-        var dateComponents = DateComponents()
-        dateComponents.hour = 8
-        dateComponents.minute = 0
-        print(Calendar.current.date(from: dateComponents) ?? .now)
+        let components = Calendar.current.dateComponents([.hour, .minute], from: Date.now)
+        let hour = components.hour ?? 0
+        let minute = components.minute ?? 0
+        print("\(hour):\(minute)")
     }
 }
 
