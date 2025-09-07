@@ -17,49 +17,7 @@ struct ContentView: View {
         return Calendar.current.date(from: components) ?? .now
     }
     
-    @State private var wakeUp = defaultWakeUp
-    @State private var sleepAmount = 8.0
-    @State private var coffeeCups = 1
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    @State private var showingAlert = false
-    
-    
-    var body: some View {
-        NavigationStack {
-            Form {
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("When do you want to wake up?")
-                        .font(.headline)
-                    DatePicker("Please enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
-                        .labelsHidden()
-                }
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("Desired amout of sleep")
-                        .font(.headline)
-                    Stepper("\(sleepAmount.formatted()) hours", value: $sleepAmount, in: 4...12, step: 0.25)
-                }
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("Daily coffee intake")
-                        .font(.headline)
-                    Stepper("\(coffeeCups) \(cupLabel(for: coffeeCups))", value: $coffeeCups, in: 1...20)
-                }
-            }
-            .navigationTitle("BetterRest")
-            .toolbar {
-                Button("Calculate", action: calculateBedTime)
-            }
-            .alert(alertTitle, isPresented: $showingAlert) {
-                Button("OK") { }
-            } message: {
-                Text(alertMessage)
-            }
-        }
-    }
-    private func cupLabel(for quantity: Int) -> String {
-        quantity == 1 ? "cup" : "cups"
-    }
-    private func calculateBedTime() {
+    private var bedTime: String {
         do {
             let config = MLModelConfiguration()
             let model = try SleepCalculator(configuration: config)
@@ -70,14 +28,47 @@ struct ContentView: View {
             
             let prediction = try model.prediction(wake: Double(hour + minutes), estimatedSleep: sleepAmount, coffee: Double(coffeeCups))
             let sleepTime = wakeUp - prediction.actualSleep
-            
-            alertTitle = "Your bedtime is..."
-            alertMessage = sleepTime.formatted(date: .omitted, time: .shortened)
+            return sleepTime.formatted(date: .omitted, time: .shortened)
         } catch {
-            alertTitle = "Error"
-            alertMessage = "Sorry, there was a problem calculating your bedtime."
+            return "Error calculating bedtime"
         }
-        showingAlert = true
+    }
+    
+    @State private var wakeUp = defaultWakeUp
+    @State private var sleepAmount = 8.0
+    @State private var coffeeCups = 0
+    
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(header: Text("When do you want to wake up?")) {
+                    DatePicker("Please enter a time", selection: $wakeUp, displayedComponents: .hourAndMinute)
+                        .labelsHidden()
+                }
+                Section(header: Text("Desired amout of sleep")) {
+                    Stepper("\(sleepAmount.formatted()) hours", value: $sleepAmount, in: 4...12, step: 0.25)
+                }
+                Section(header: Text("Daily coffee intake")) {
+                    Picker("Coffee cups", selection: $coffeeCups) {
+                        ForEach(0..<21) {
+                            Text("\($0) \(cupLabel(for: $0))")
+                        }
+                    }
+                    .pickerStyle(.navigationLink)
+                }
+                Section(header: Text("Recommended Bedtime")) {
+                    Text("\(bedTime)")
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical)
+                }
+            }
+            .navigationTitle("BetterRest")
+        }
+    }
+    private func cupLabel(for quantity: Int) -> String {
+        quantity == 1 ? "cup" : "cups"
     }
 }
 
